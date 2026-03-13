@@ -1,0 +1,16 @@
+{
+  "name": "LL88 Audit Tool",
+  "short_name": "LL88 Audit",
+  "description": "NYC Local Law 88 lighting compliance audit tool for Gaia Energy Solutions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
