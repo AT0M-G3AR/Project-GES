@@ -133,6 +133,13 @@ export default function LocationEntry() {
     }));
   };
 
+  const updatePhoto = (photoId, updatedPhoto) => {
+    setLoc((prev) => ({
+      ...prev,
+      photos: prev.photos.map((p) => (p.id === photoId ? updatedPhoto : p)),
+    }));
+  };
+
   const deletePhoto = (photoId) => {
     setLoc((prev) => ({
       ...prev,
@@ -143,13 +150,17 @@ export default function LocationEntry() {
   // ── Save ───────────────────────────────────────
   const handleSave = () => {
     updateAudit((prev) => {
-      if (isNew) {
-        return { ...prev, locations: [...prev.locations, loc] };
-      } else {
+      // Prevent double-save from rapid taps or unhandled back/forward states.
+      // Even if 'isNew' is true, check if the ID already made it into the array.
+      const exists = prev.locations.some((l) => l.id === loc.id);
+
+      if (exists) {
         return {
           ...prev,
           locations: prev.locations.map((l) => (l.id === loc.id ? loc : l)),
         };
+      } else {
+        return { ...prev, locations: [...prev.locations, loc] };
       }
     });
     clearDraft(); // Clean up — data is now saved to audit
@@ -265,6 +276,7 @@ export default function LocationEntry() {
         photos={loc.photos}
         locationName={loc.name}
         onAddPhoto={addPhoto}
+        onUpdatePhoto={updatePhoto}
         onDeletePhoto={deletePhoto}
       />
 

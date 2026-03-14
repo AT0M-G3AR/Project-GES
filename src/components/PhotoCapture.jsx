@@ -4,12 +4,11 @@
  *
  * Demo mode: stores photos as base64 data URLs in localStorage.
  */
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { createPhoto } from '../shared/dataModel.js';
 
-export default function PhotoCapture({ photos = [], locationName, onAddPhoto, onDeletePhoto }) {
+export default function PhotoCapture({ photos = [], locationName, onAddPhoto, onUpdatePhoto, onDeletePhoto }) {
   const fileRef = useRef(null);
-  const [caption, setCaption] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -19,10 +18,9 @@ export default function PhotoCapture({ photos = [], locationName, onAddPhoto, on
     reader.onload = () => {
       const photo = createPhoto({
         storageUrl: reader.result,  // base64 data URL in demo mode
-        caption: caption || locationName || 'Photo',
+        caption: locationName || 'Photo', // Default to location name
       });
       onAddPhoto(photo);
-      setCaption('');
     };
     reader.readAsDataURL(file);
 
@@ -35,26 +33,36 @@ export default function PhotoCapture({ photos = [], locationName, onAddPhoto, on
       <label className="form-label">Photos</label>
       <div className="photo-grid">
         {photos.map((photo, i) => (
-          <div key={photo.id} className="photo-thumb" title={photo.caption}>
-            <img src={photo.storageUrl} alt={photo.caption || `Photo ${i + 1}`} />
-            <button
-              type="button"
-              className="delete-icon-btn"
-              style={{
-                position: 'absolute',
-                top: 2,
-                right: 2,
-                background: 'rgba(0,0,0,0.6)',
-                borderRadius: '50%',
-                width: 22,
-                height: 22,
-                fontSize: '12px',
-                color: '#fff',
-              }}
-              onClick={() => onDeletePhoto(photo.id)}
-            >
-              ✕
-            </button>
+          <div key={photo.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="photo-thumb" title={photo.caption}>
+              <img src={photo.storageUrl} alt={photo.caption || `Photo ${i + 1}`} />
+              <button
+                type="button"
+                className="delete-icon-btn"
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 2,
+                  background: 'rgba(0,0,0,0.6)',
+                  borderRadius: '50%',
+                  width: 22,
+                  height: 22,
+                  fontSize: '12px',
+                  color: '#fff',
+                }}
+                onClick={() => onDeletePhoto(photo.id)}
+              >
+                ✕
+              </button>
+            </div>
+            <input
+              className="form-input"
+              style={{ padding: '6px 8px', fontSize: '12px' }}
+              type="text"
+              placeholder="Caption"
+              value={photo.caption}
+              onChange={(e) => onUpdatePhoto && onUpdatePhoto(photo.id, { ...photo, caption: e.target.value })}
+            />
           </div>
         ))}
 
@@ -74,19 +82,6 @@ export default function PhotoCapture({ photos = [], locationName, onAddPhoto, on
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
-
-      {/* Caption input (optional, shown when there are photos) */}
-      {photos.length > 0 && (
-        <div className="form-group" style={{ marginTop: '12px', marginBottom: 0 }}>
-          <input
-            className="form-input"
-            type="text"
-            placeholder="Caption for next photo (optional)"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-          />
-        </div>
-      )}
     </div>
   );
 }
