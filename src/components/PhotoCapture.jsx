@@ -14,17 +14,45 @@ export default function PhotoCapture({ photos = [], locationName, onAddPhoto, on
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
+    // Compress before storing: resize to max 800px, JPEG 70% quality.
+    // Raw phone photos are 3–5 MB; this brings them down to ~50–150 KB,
+    // keeping localStorage writes fast and within quota.
+    const MAX_PX = 800;
+    const QUALITY = 0.7;
+
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+      if (width > MAX_PX || height > MAX_PX) {
+        if (width >= height) {
+          height = Math.round((height * MAX_PX) / width);
+          width = MAX_PX;
+        } else {
+          width = Math.round((width * MAX_PX) / height);
+          height = MAX_PX;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+      const compressed = canvas.toDataURL('image/jpeg', QUALITY);
       const photo = createPhoto({
-        storageUrl: reader.result,  // base64 data URL in demo mode
-        caption: locationName || 'Photo', // Default to location name
+        storageUrl: compressed,
+        caption: locationName || 'Photo',
       });
       onAddPhoto(photo);
     };
-    reader.readAsDataURL(file);
 
-    // Reset input so the same file can be re-selected
+    img.src = objectUrl;
+
+    // Reset so the same file can be re-selected
     e.target.value = '';
   };
 
