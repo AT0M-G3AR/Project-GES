@@ -5,6 +5,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAudit } from '../hooks/useAudit.js';
 import { useCalculations } from '../hooks/useCalculations.js';
+import { useToast } from '../shared/ToastContext.jsx';
 import {
   calcTotalWatts,
   calcZoneLPD,
@@ -18,6 +19,7 @@ export default function AuditSummary() {
   const navigate = useNavigate();
   const { audit, updateAudit } = useAudit(auditId);
   const { totalSqFt, buildingLPD, codeAllowance, passFailResult } = useCalculations(audit);
+  const { showToast } = useToast();
 
   if (!audit) {
     return (
@@ -58,6 +60,7 @@ export default function AuditSummary() {
       if (!proceed) return;
     }
     updateAudit({ status: 'complete' });
+    showToast('Audit marked as complete!');
     navigate('/');
   };
 
@@ -241,6 +244,7 @@ export default function AuditSummary() {
                 );
                 if (confirmed) {
                   updateAudit({ status: 'in-progress', updatedAt: Date.now() });
+                  showToast('Audit reopened!');
                 }
               }}
               id="btn-reopen-audit"

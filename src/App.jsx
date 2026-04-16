@@ -2,7 +2,9 @@
  * App.jsx — Root Application Component
  * Single Vite React app serving mobile + dashboard views via routing.
  */
-import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { ToastProvider } from './shared/ToastContext.jsx';
+import Toast from './components/Toast.jsx';
 import AuditListPage from './components/AuditListPage.jsx';
 import AuditSetup from './components/AuditSetup.jsx';
 import AuditEdit from './components/AuditEdit.jsx';
@@ -12,10 +14,12 @@ import AuditSummary from './components/AuditSummary.jsx';
 
 export default function App() {
   const location = useLocation();
-  const isHome = location.pathname === '/';
 
   return (
-    <>
+    <ToastProvider>
+      {/* ── Toast Notification ─────────────────────── */}
+      <Toast />
+
       {/* ── App Header ─────────────────────────────── */}
       <header className="app-header">
         <img src="/favicon.svg" alt="LL88" className="app-header__logo" />
@@ -37,6 +41,6 @@ export default function App() {
           <Route path="/audit/:auditId/summary" element={<AuditSummary />} />
         </Routes>
       </main>
-    </>
+    </ToastProvider>
   );
 }

@@ -7,6 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAudit } from '../hooks/useAudit.js';
 import { createZone } from '../shared/dataModel.js';
 import AddressAutocomplete from './AddressAutocomplete.jsx';
+import { useToast } from '../shared/ToastContext.jsx';
 import {
   BUILDING_TYPES,
   BUILDING_AREA_CATEGORIES,
@@ -50,6 +51,7 @@ export default function AuditEdit() {
   const { auditId } = useParams();
   const navigate = useNavigate();
   const { audit, updateAudit } = useAudit(auditId);
+  const { showToast } = useToast();
 
   const [form, setForm] = useState(null);
 
@@ -161,6 +163,7 @@ export default function AuditEdit() {
       zones: form.zones,
       updatedAt: Date.now(),
     });
+    showToast('Audit info updated!');
     navigate(`/audit/${auditId}`);
   };
 
