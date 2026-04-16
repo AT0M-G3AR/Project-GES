@@ -54,11 +54,21 @@ export default function LocationList() {
             {audit.buildingType} · {audit.buildingAreaType}
           </div>
         </div>
-        {passFailResult && (
-          <span className={`badge badge--${passFailResult === 'PASS' ? 'pass' : 'fail'}`} style={{ marginTop: '4px' }}>
-            {passFailResult}
-          </span>
-        )}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+          <button
+            className="btn btn--secondary"
+            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+            onClick={() => navigate(`/audit/${auditId}/edit`)}
+            title="Edit Audit Info"
+          >
+            ✏️ Edit
+          </button>
+          {passFailResult && (
+            <span className={`badge badge--${passFailResult === 'PASS' ? 'pass' : 'fail'}`}>
+              {passFailResult}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── Stats Bar ──────────────────────── */}
