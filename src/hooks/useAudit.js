@@ -19,14 +19,18 @@ function notify() {
   _listeners.forEach((fn) => fn());
 }
 
+function _readFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
 function getAudits() {
   if (_cache === null) {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      _cache = raw ? JSON.parse(raw) : [];
-    } catch {
-      _cache = [];
-    }
+    _cache = _readFromStorage();
   }
   return _cache;
 }
@@ -40,6 +44,27 @@ function setAudits(audits) {
 function subscribe(listener) {
   _listeners.add(listener);
   return () => _listeners.delete(listener);
+}
+
+// ── Keep cache fresh on app/tab switch ────────────────────
+// Prevents data loss when user switches to another app and returns
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      _cache = _readFromStorage();
+      notify();
+    }
+  });
+}
+
+// Cross-tab sync: pick up changes made in other browser tabs
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) {
+      _cache = e.newValue ? JSON.parse(e.newValue) : [];
+      notify();
+    }
+  });
 }
 
 // ── useAuditList ──────────────────────────────────────────
