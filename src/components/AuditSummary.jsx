@@ -229,10 +229,33 @@ export default function AuditSummary() {
           </button>
         )}
         {audit.status === 'complete' && (
-          <div className="badge badge--pass" style={{ textAlign: 'center', padding: '12px', fontSize: '1rem', justifyContent: 'center' }}>
-            ✓ Audit Complete
-          </div>
+          <>
+            <div className="badge badge--pass" style={{ textAlign: 'center', padding: '12px', fontSize: '1rem', justifyContent: 'center' }}>
+              ✓ Audit Complete
+            </div>
+            <button
+              className="btn btn--secondary btn--full"
+              onClick={() => {
+                const confirmed = window.confirm(
+                  'Are you sure you want to reopen this audit?\n\nThis will change the status back to "in-progress".'
+                );
+                if (confirmed) {
+                  updateAudit({ status: 'in-progress', updatedAt: Date.now() });
+                }
+              }}
+              id="btn-reopen-audit"
+            >
+              ↩ Reopen Audit
+            </button>
+          </>
         )}
+        <button
+          className="btn btn--secondary btn--full"
+          onClick={() => navigate(`/audit/${auditId}/edit`)}
+          id="btn-edit-audit"
+        >
+          ✏️ Edit Audit Info
+        </button>
         <button
           className="btn btn--secondary btn--full"
           onClick={() => navigate(`/audit/${auditId}`)}

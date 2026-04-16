@@ -5,6 +5,7 @@
 import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import AuditListPage from './components/AuditListPage.jsx';
 import AuditSetup from './components/AuditSetup.jsx';
+import AuditEdit from './components/AuditEdit.jsx';
 import LocationList from './components/LocationList.jsx';
 import LocationEntry from './components/LocationEntry.jsx';
 import AuditSummary from './components/AuditSummary.jsx';
@@ -29,6 +30,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<AuditListPage />} />
           <Route path="/audit/new" element={<AuditSetup />} />
+          <Route path="/audit/:auditId/edit" element={<AuditEdit />} />
           <Route path="/audit/:auditId" element={<LocationList />} />
           <Route path="/audit/:auditId/location/new" element={<LocationEntry />} />
           <Route path="/audit/:auditId/location/:locationId" element={<LocationEntry />} />

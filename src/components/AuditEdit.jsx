@@ -1,10 +1,10 @@
 /**
- * AuditSetup — New audit creation form.
- * FR-01 through FR-06: Address, BBL, BIN, Building Type, Area Type, Zones, Auditors.
+ * AuditEdit — Edit an existing audit's info (address, BBL, BIN, building type, etc.)
+ * Works for both in-progress and completed audits.
  */
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuditList } from '../hooks/useAudit.js';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAudit } from '../hooks/useAudit.js';
 import { createZone } from '../shared/dataModel.js';
 import AddressAutocomplete from './AddressAutocomplete.jsx';
 import {
@@ -46,31 +46,49 @@ function sanitizeBblBin(value) {
   return value.replace(/[^0-9-]/g, '');
 }
 
-export default function AuditSetup() {
+export default function AuditEdit() {
+  const { auditId } = useParams();
   const navigate = useNavigate();
-  const { addAudit } = useAuditList();
+  const { audit, updateAudit } = useAudit(auditId);
 
-  const [form, setForm] = useState({
-    address: '',
-    bbl: '',
-    bin: '',
-    buildingType: 'residential',
-    buildingAreaType: 'Multifamily',
-    meteringType: 'directly-metered',
-    auditDate: new Date().toISOString().split('T')[0],
-    auditorName: '',
-    zones: [],
-  });
+  const [form, setForm] = useState(null);
+
+  // Initialize form from audit data
+  useEffect(() => {
+    if (audit && !form) {
+      setForm({
+        address: audit.address || '',
+        bbl: audit.bbl || '',
+        bin: audit.bin || '',
+        buildingType: audit.buildingType || 'residential',
+        buildingAreaType: audit.buildingAreaType || 'Multifamily',
+        meteringType: audit.meteringType || 'directly-metered',
+        auditDate: audit.auditDate || new Date().toISOString().split('T')[0],
+        auditorName: audit.auditors?.[0] || '',
+        zones: audit.zones || [],
+      });
+    }
+  }, [audit]);
+
+  if (!audit) {
+    return (
+      <div className="empty-state animate-fade-in">
+        <div className="empty-state__icon">🔍</div>
+        <div className="empty-state__title">Audit not found</div>
+        <button className="btn btn--primary" onClick={() => navigate('/')}>Go Home</button>
+      </div>
+    );
+  }
+
+  if (!form) return null;
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  // Validated setter for BBL/BIN — strips alphabetical characters
   const setBblBin = (field) => (e) => {
     const cleaned = sanitizeBblBin(e.target.value);
     setForm((f) => ({ ...f, [field]: cleaned }));
   };
 
-  // When an address is selected from autocomplete, try to auto-populate BBL/BIN
   const handleAddressSelect = async (placeData) => {
     if (!placeData?.components) return;
     const comps = placeData.components;
@@ -89,7 +107,6 @@ export default function AuditSetup() {
     }
   };
 
-  // When buildingType changes, set a sensible default area type
   const handleBuildingTypeChange = (e) => {
     const bt = e.target.value;
     let defaultArea = 'Multifamily';
@@ -132,7 +149,7 @@ export default function AuditSetup() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const audit = addAudit({
+    updateAudit({
       address: form.address,
       bbl: form.bbl,
       bin: form.bin,
@@ -142,17 +159,32 @@ export default function AuditSetup() {
       auditDate: form.auditDate,
       auditors: form.auditorName ? [form.auditorName] : [],
       zones: form.zones,
+      updatedAt: Date.now(),
     });
-    navigate(`/audit/${audit.id}`);
+    navigate(`/audit/${auditId}`);
   };
 
   return (
     <div className="animate-fade-in">
-      <button className="app-header__back" onClick={() => navigate('/')} style={{ marginBottom: 'var(--space-4)' }}>
+      <button className="app-header__back" onClick={() => navigate(`/audit/${auditId}`)} style={{ marginBottom: 'var(--space-4)' }}>
         ← Back
       </button>
 
-      <h1 className="section-header">New Audit</h1>
+      <h1 className="section-header">Edit Audit Info</h1>
+
+      {audit.status === 'complete' && (
+        <div style={{
+          marginBottom: '16px',
+          padding: '10px 14px',
+          background: 'rgba(59, 130, 246, 0.08)',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
+          borderRadius: '10px',
+          fontSize: '0.875rem',
+          color: 'var(--color-accent)',
+        }}>
+          ℹ️ This audit is marked as <strong>complete</strong>. You can still edit its information.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         {/* ── Building Address ─────────────────── */}
@@ -347,9 +379,9 @@ export default function AuditSetup() {
         <button
           type="submit"
           className="btn btn--primary btn--full btn--lg"
-          id="btn-create-audit"
+          id="btn-save-audit"
         >
-          Create Audit →
+          💾 Save Changes
         </button>
       </form>
     </div>
