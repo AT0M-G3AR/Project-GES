@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAudit } from '../hooks/useAudit.js';
 import { createLocation, createFixture } from '../shared/dataModel.js';
+import { useToast } from '../shared/ToastContext.jsx';
 import FixtureRow from './FixtureRow.jsx';
 import PhotoCapture from './PhotoCapture.jsx';
 
@@ -41,6 +42,7 @@ export default function LocationEntry() {
   const { auditId, locationId } = useParams();
   const navigate = useNavigate();
   const { audit, updateAudit } = useAudit(auditId);
+  const { showToast } = useToast();
   const isNew = !locationId || locationId === 'new';
 
   // Local form state
@@ -161,6 +163,7 @@ export default function LocationEntry() {
         return { ...prev, locations: [...prev.locations, loc] };
       }
     });
+    showToast(isNew ? 'Location saved!' : 'Location updated!');
     clearDraft();
     // window.location.href gives guaranteed navigation on all mobile browsers.
     // Since all data lives in localStorage the reload is safe.

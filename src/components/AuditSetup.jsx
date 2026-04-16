@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuditList } from '../hooks/useAudit.js';
 import { createZone } from '../shared/dataModel.js';
 import AddressAutocomplete from './AddressAutocomplete.jsx';
+import { useToast } from '../shared/ToastContext.jsx';
 import {
   BUILDING_TYPES,
   BUILDING_AREA_CATEGORIES,
@@ -49,6 +50,7 @@ function sanitizeBblBin(value) {
 export default function AuditSetup() {
   const navigate = useNavigate();
   const { addAudit } = useAuditList();
+  const { showToast } = useToast();
 
   const [form, setForm] = useState({
     address: '',
@@ -143,6 +145,7 @@ export default function AuditSetup() {
       auditors: form.auditorName ? [form.auditorName] : [],
       zones: form.zones,
     });
+    showToast('Audit created successfully!');
     navigate(`/audit/${audit.id}`);
   };
 
