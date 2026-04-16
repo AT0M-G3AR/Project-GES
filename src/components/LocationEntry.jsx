@@ -46,7 +46,6 @@ export default function LocationEntry() {
   // Local form state
   const [loc, setLoc] = useState(null);
   const [initialized, setInitialized] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   // Initialize location state — check for a saved draft first (camera recovery)
   useEffect(() => {
@@ -150,14 +149,9 @@ export default function LocationEntry() {
 
   // ── Save ───────────────────────────────────────
   const handleSave = () => {
-    if (saving) return; // Prevent double-tap
-    setSaving(true);
-
     updateAudit((prev) => {
-      // Prevent double-save from rapid taps or unhandled back/forward states.
-      // Even if 'isNew' is true, check if the ID already made it into the array.
+      // Prevent double-save: check if the ID already exists regardless of isNew.
       const exists = prev.locations.some((l) => l.id === loc.id);
-
       if (exists) {
         return {
           ...prev,
@@ -167,16 +161,13 @@ export default function LocationEntry() {
         return { ...prev, locations: [...prev.locations, loc] };
       }
     });
-
-    clearDraft(); // Clean up — data is now saved to audit
-
-    // Use window.location.href instead of React Router's navigate() for
-    // guaranteed navigation on all mobile browsers (iOS Safari, Android Chrome).
-    // Since all data lives in localStorage, the page reload is safe.
+    clearDraft();
+    // window.location.href gives guaranteed navigation on all mobile browsers.
+    // Since all data lives in localStorage the reload is safe.
     window.location.href = `/audit/${auditId}`;
   };
 
-  // ── Cancel / Back (also cleans up draft) ───────
+  // ── Cancel / Back ──────────────────────────────
   const handleBack = () => {
     clearDraft();
     window.location.href = `/audit/${auditId}`;
@@ -296,10 +287,8 @@ export default function LocationEntry() {
         className="btn btn--primary btn--full btn--lg"
         onClick={handleSave}
         id="btn-save-location"
-        disabled={saving}
-        style={{ opacity: saving ? 0.7 : 1 }}
       >
-        {saving ? 'Saving…' : (isNew ? 'Save Location' : 'Update Location')}
+        {isNew ? 'Save Location' : 'Update Location'}
       </button>
     </div>
   );
